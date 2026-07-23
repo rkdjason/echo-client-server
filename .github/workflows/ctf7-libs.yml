@@ -1,0 +1,27 @@
+name: ctf7-libs
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/ctf7-libs.yml'
+
+jobs:
+  bundle:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Bundle flatter runtime libraries
+        run: |
+          sudo apt-get update -qq >/tmp/install.log 2>&1
+          sudo apt-get install -qq -y --no-install-recommends libopenblas0-pthread libfplll7 >>/tmp/install.log 2>&1
+          mkdir -p /tmp/flatter-runtime-libs
+          cp -L /lib/x86_64-linux-gnu/libopenblas.so.0 /tmp/flatter-runtime-libs/
+          cp -L /lib/x86_64-linux-gnu/libfplll.so.7 /tmp/flatter-runtime-libs/
+          ls -lh /tmp/flatter-runtime-libs
+          tar -C /tmp -czf /tmp/flatter-runtime-libs.tar.gz flatter-runtime-libs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatter-runtime-libs
+          path: /tmp/flatter-runtime-libs.tar.gz
+          retention-days: 2
